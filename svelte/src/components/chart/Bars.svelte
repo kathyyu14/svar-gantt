@@ -246,6 +246,7 @@
 					});
 				}
 				ignoreNextClick = true;
+				console.log("endDrag task id:", id);
 			}
 
 			endDrag();
@@ -255,8 +256,15 @@
 	function startDrag() {
 		document.body.style.userSelect = "none";
 	}
+
 	function endDrag() {
 		document.body.style.userSelect = "";
+		console.log("endDrag");
+		if (progressFrom) {
+			console.log("endDrag task id:", progressFrom.id);
+		} else if (taskMove) {
+			console.log("endDrag task id:", taskMove.id);
+		}
 	}
 
 	function onDblClick(e) {
@@ -355,6 +363,45 @@
 	}
 
 	let totalWidth = $state(0);
+
+	function handleDragOver(e) {
+		e.preventDefault();
+		e.dataTransfer.dropEffect = "copy";
+		e.currentTarget.classList.add("wx-drag-over");
+
+		// Remove the class when dragging leaves
+		const removeDragOver = () => {
+			e.currentTarget.classList.remove("wx-drag-over");
+			e.currentTarget.removeEventListener("dragleave", removeDragOver);
+			e.currentTarget.removeEventListener("drop", removeDragOver);
+		};
+
+		e.currentTarget.addEventListener("dragleave", removeDragOver);
+		e.currentTarget.addEventListener("drop", removeDragOver);
+	}
+
+	function handleDrop(e, task) {
+		e.preventDefault();
+		try {
+			const dragData = JSON.parse(e.dataTransfer.getData("text/plain"));
+			console.log("Drop event details:", {
+				taskId: task.id,
+				taskName: task.text,
+				droppedData: dragData,
+			});
+
+			// Highlight the task
+			api.exec("select-task", {
+				id: task.id,
+				toggle: false,
+				range: false,
+			});
+		} catch (err) {
+			console.error("Drop error:", err);
+			// If JSON parse fails, show raw data
+			console.log("Raw drop data:", e.dataTransfer.getData("text/plain"));
+		}
+	}
 </script>
 
 <svelte:window onmouseup={mouseup} />
@@ -385,6 +432,8 @@
 				style={taskStyle(task)}
 				data-tooltip-id={task.id}
 				data-id={task.id}
+				ondragover={handleDragOver}
+				ondrop={e => handleDrop(e, task)}
 			>
 				{#if !readonly}
 					<div
@@ -688,5 +737,10 @@
 
 	.wx-cut {
 		opacity: 50%;
+	}
+
+	.wx-bar.wx-drag-over {
+		border: 2px dashed #4caf50 !important;
+		background-color: rgba(76, 175, 80, 0.1);
 	}
 </style>

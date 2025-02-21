@@ -23,7 +23,7 @@
 		--wx-gantt-bar-border-radius: 3px;
 		--wx-gantt-milestone-border-radius: 3px;
 
-		--wx-gantt-task-color: #37a9ef;
+		--wx-gantt-task-color: #2ca150;
 		--wx-gantt-task-font-color: #ffffffe5;
 		--wx-gantt-task-fill-color: #098cdc;
 		--wx-gantt-task-border-color: #098cdc;
